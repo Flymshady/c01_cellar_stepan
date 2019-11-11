@@ -7,7 +7,7 @@ uniform float time;
 uniform mat4 lightViewProjection;
 uniform float type;
 
-// out vec3  vertColor; //bud ev projektu
+//out vec3  vertColor; //bud ev projektu
 out vec3 normal;
 out vec3 light;
 out vec3 viewDirection;
@@ -15,8 +15,16 @@ out vec4 depthTextureCoord;
 out vec2 texCoord;
 
 float getZ(vec2 vec) {
-	return sin(time + vec.y * 3.14 *2);
+	return sin(time + vec.y * 3.14 *2)-1.5;
 }
+vec3 getVlnka(vec2 vec){
+	float x= vec.x;
+	float y=vec.y;
+	float z = getZ(vec);
+
+	return vec3(x,y,z);
+}
+
 
 // udelat taj dalsi objekt
 vec3 getSphere2(vec2 vec) {
@@ -63,6 +71,16 @@ vec3 getSphere2Normal(vec2 vec){
 	return cross(u,v); //vektorovy soucin
 }
 
+vec3 getVlnkaNormal(vec2 vec){
+	vec3 u = getVlnka(vec+vec2(0.001, 0))
+	- getVlnka(vec-vec2(0.001,0));
+
+	vec3 v = getVlnka(vec+vec2(0, 0.001))
+	- getVlnka(vec-vec2(0, 0.001));
+
+	return cross(u,v); //vektorovy soucin
+}
+
 void main() {
 	vec2 position;
 	vec4 pos4;
@@ -95,6 +113,15 @@ void main() {
 		normal = mat3(view)* getSphere2Normal(position);
 
 
+
+
+	}
+	if(type==2){
+		position = inPosition * 2 - 1;
+		vec4(position, getZ(position) , 1.0);
+		pos4 = vec4(position, getZ(position), 1.0);
+		gl_Position = projection * view * pos4;
+		normal = mat3(view)* getVlnkaNormal(position);
 
 
 	}

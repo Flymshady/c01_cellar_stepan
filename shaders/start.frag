@@ -1,7 +1,7 @@
 #version 150
 
 out vec4 outColor; // output from the fragment shader
-// in vec3 vertColor; // bud ev projektu
+in vec3 vertColor; // bud ev projektu
 in vec3 normal;
 in vec3 light;
 in vec3 viewDirection;
@@ -31,7 +31,7 @@ void main() {
 	//odkomentovat svetlo
 	vec4 finalColor = ambient +diffuse +specular;
 	//	tohle uz nwm co je tk to ne
-	//= vec4(vertColor, 1.0);
+	//vec4(vertColor, 1.0);
 
 	float zL = texture(depthTexture, depthTextureCoord.xy).r; // R G i B jsou stejne ptze .zzz
 
@@ -46,7 +46,7 @@ void main() {
 		//=vec4(0,1,0,1);
 	}
 
-	// outColor = vec4 (normalize(normal), 1.0); zobrazeni normaly do textury
+	// outColor = vec4 (normalize(normal), 1.0); //zobrazeni normaly do textury
 	// outColor = depthTextureCoord;
 
 } 

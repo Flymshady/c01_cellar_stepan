@@ -154,6 +154,8 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 1);
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
+        glUniform1f(locTypeLight, 2);
+        buffers.draw(GL_TRIANGLES, shaderProgramLight);
 
 
     }
@@ -186,6 +188,8 @@ public class Renderer extends AbstractRenderer{
         glUniform1f(locType, 0);
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 1);
+        buffers.draw(GL_TRIANGLES, shaderProgram);
+        glUniform1f(locType, 2);
         buffers.draw(GL_TRIANGLES, shaderProgram);
 
     }
