@@ -8,10 +8,7 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
-import org.lwjgl.opengl.GL11;
-import transforms.Camera;
-import transforms.Mat4PerspRH;
-import transforms.Vec3D;
+import transforms.*;
 
 import java.io.IOException;
 import java.nio.DoubleBuffer;
@@ -41,12 +38,18 @@ public class Renderer extends AbstractRenderer{
     private int locProjection;
     private int locProjectionLight;
     private int locLightVP;
+    private int locModel;
+    private int locModelLight;
     private Mat4PerspRH projection;
     private Camera camera;
     private int locTime;
     private int locType, locTypeLight;
     private int locTimeLight;
     private float time;
+    private float rot1 = 0;
+    private boolean rot1B = true;
+    private float rotLight = 0;
+    private boolean rotLightB = true;
 
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer viewer;
@@ -57,6 +60,8 @@ public class Renderer extends AbstractRenderer{
     double ox, oy;
     boolean mouseButton1 = false;
     private Camera cameraLight;
+
+    private boolean line = false;
 
     public void init() {
         glClearColor(0.1f, 0.1f, 0.1f, 1);
@@ -71,11 +76,13 @@ public class Renderer extends AbstractRenderer{
         locProjection = glGetUniformLocation(shaderProgram, "projection");
         locType=  glGetUniformLocation(shaderProgram, "type");
         locTime =  glGetUniformLocation(shaderProgram, "time");
+        locModel = glGetUniformLocation(shaderProgram, "model");
 
         locViewLight = glGetUniformLocation(shaderProgramLight, "view");
         locProjectionLight = glGetUniformLocation(shaderProgramLight, "projection");
         locTypeLight =  glGetUniformLocation(shaderProgramLight, "type");
         locTimeLight =  glGetUniformLocation(shaderProgramLight, "time");
+        locModelLight =  glGetUniformLocation(shaderProgramLight, "model");
 
         locLightVP = glGetUniformLocation(shaderProgram, "lightViewProjection");
 
@@ -106,14 +113,26 @@ public class Renderer extends AbstractRenderer{
 
         projection = new Mat4PerspRH(Math.PI/3,
                 //aktualizovat po rozsireni okna pres windowsizecallback
-                LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH, 1, 20);
+                LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH, 1, 50);
     }
     public void display(){
 
 
+        if(rot1B) {
+            rot1 += 0.01;
+        }
+        else{
+            rot1+=0;
+        }
 
-
+        if(rotLightB) {
+            rotLight += 0.01;
+        }
+        else{
+            rotLight+=0;
+        }
         time += 0.1;
+
         renderFromLight();
         renderFromViewer();
 
@@ -150,16 +169,32 @@ public class Renderer extends AbstractRenderer{
         glUniform1f(locTimeLight, time);
 
         glUniform1f(locTypeLight, 0);
+        glUniformMatrix4fv (locModelLight, false,
+                new Mat4Scale(1).mul(new Mat4RotX(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 1);
+        glUniformMatrix4fv (locModelLight, false,
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(-3,-3,1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 2);
+        glUniformMatrix4fv (locModelLight, false,
+                new Mat4Scale(1).mul(new Mat4Transl(0,3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 3);
+        glUniformMatrix4fv (locModelLight, false,
+               new Mat4Scale(7).mul(new Mat4Transl(0,0,-8)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 4);
+        glUniformMatrix4fv (locModelLight, false,
+                new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 5);
+        glUniformMatrix4fv (locModelLight, false,
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
+        buffers.draw(GL_TRIANGLES, shaderProgramLight);
+        glUniform1f(locTypeLight, 6);
+        glUniformMatrix4fv (locModelLight, false,
+                new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(-3,0,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
 
 
@@ -168,6 +203,11 @@ public class Renderer extends AbstractRenderer{
     private void renderFromViewer() {
         glEnable(GL_DEPTH_TEST);
         glUseProgram(shaderProgram);
+        if(line){
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }else{
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
 
         //defaultni framebuffer - render do obrazovky
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -176,6 +216,7 @@ public class Renderer extends AbstractRenderer{
 
         glClearColor(0.5f,0f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         glUniformMatrix4fv(locView, false, camera.getViewMatrix().floatArray());
         glUniformMatrix4fv(locProjection, false, projection.floatArray());
@@ -193,16 +234,36 @@ public class Renderer extends AbstractRenderer{
         glUniform1f(locTime, time);
 
         glUniform1f(locType, 0);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(1).mul(new Mat4RotX(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 1);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(-3,-3,1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 2);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(1).mul(new Mat4Transl(0,3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 3);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(7).mul(new Mat4Transl(0,0,-8)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 4);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 5);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
+        buffers.draw(GL_TRIANGLES, shaderProgram);
+        glUniform1f(locType, 6);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(-3,0,0)).floatArray());
+        buffers.draw(GL_TRIANGLES, shaderProgram);
+        glUniform1f(locType, 7);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(0.4).mul(new Mat4RotY(rotLight)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
 
     }
@@ -241,6 +302,27 @@ public class Renderer extends AbstractRenderer{
                         break;
                     case GLFW_KEY_F:
                         camera = camera.mulRadius(1.1f);
+                        break;
+                    case GLFW_KEY_L:
+                        if(line){
+                            line=false;
+                        }else{
+                            line=true;
+                        }
+                        break;
+                    case GLFW_KEY_O:
+                        if(rot1B){
+                            rot1B=false;
+                        }else{
+                            rot1B=true;
+                        }
+                        break;
+                    case GLFW_KEY_P:
+                        if(rotLightB){
+                            rotLightB=false;
+                        }else{
+                            rotLightB=true;
+                        }
                         break;
                 }
             }
