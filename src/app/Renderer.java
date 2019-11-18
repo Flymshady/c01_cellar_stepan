@@ -60,6 +60,7 @@ public class Renderer extends AbstractRenderer{
     double ox, oy;
     boolean mouseButton1 = false;
     private Camera cameraLight;
+    private  int lightPos;
 
     private boolean line = false;
 
@@ -83,6 +84,8 @@ public class Renderer extends AbstractRenderer{
         locTypeLight =  glGetUniformLocation(shaderProgramLight, "type");
         locTimeLight =  glGetUniformLocation(shaderProgramLight, "time");
         locModelLight =  glGetUniformLocation(shaderProgramLight, "model");
+
+        lightPos =  glGetUniformLocation(shaderProgram, "lightPos");
 
         locLightVP = glGetUniformLocation(shaderProgram, "lightViewProjection");
 
@@ -111,6 +114,7 @@ public class Renderer extends AbstractRenderer{
                 .withAzimuth(5/4f* Math.PI)
                 .withZenith(-1/5f*Math.PI);
 
+
         projection = new Mat4PerspRH(Math.PI/3,
                 //aktualizovat po rozsireni okna pres windowsizecallback
                 LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH, 1, 50);
@@ -133,14 +137,17 @@ public class Renderer extends AbstractRenderer{
         }
         time += 0.1;
 
+
         renderFromLight();
         renderFromViewer();
 
 
         textRenderer.clear();
-        String text = new String(": look at console and try keys, mouse, wheel and window interaction " );
+        String text = new String("Camera - WSAD, L_SHIFT, L_CTRL, R, F, SPACE, LMB, Scroll " );
+        String text1 = new String("Fill/Line - L, Object rotation - O, Light rotation - P" );
         textRenderer.addStr2D(3, height-3, text);
-        textRenderer.addStr2D(width-90, height-3, "Štěpán Cellar");
+        textRenderer.addStr2D(3, height-15, text1);
+        textRenderer.addStr2D(width-185, height-3, "Štěpán Cellar - PGRF3 - 2019");
         textRenderer.draw();
 
         viewer.view(renderTarget.getColorTexture(), -1,0,0.5);
@@ -154,23 +161,33 @@ public class Renderer extends AbstractRenderer{
 
 
         glEnable(GL_DEPTH_TEST);
+        glUseProgram(shaderProgram);
+        Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
+        glUniform3f(lightPos,(float)light.getX(), (float)light.getY(), (float)light.getZ());
         glUseProgram(shaderProgramLight);
+
+
         renderTarget.bind();
         glClearColor(0f,0.5f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+/*
+        glUniformMatrix4fv (locModelLight, false,
+                new Mat4RotX(rot1).mul(new Mat4Transl(0,0,1)).floatArray());
+        glUniformMatrix4fv (locViewLight, false,
+                new Mat4ViewRH(light, light.mul(-1), new Vec3D(0,1,0)).floatArray());
+        glUniformMatrix4fv (locProjectionLight, false,
+                new Mat4OrthoRH(10,10,1,50).floatArray());
+*/
 
+        glUniformMatrix4fv(locViewLight, false, new Mat4ViewRH(light, light.mul(-1), new Vec3D(0,1,0)).floatArray());
 
-        glUniformMatrix4fv(locViewLight, false, cameraLight.getViewMatrix().floatArray());
-        glUniformMatrix4fv(locProjectionLight, false, projection.floatArray());
-
-
-
+        glUniformMatrix4fv(locProjectionLight, false, new Mat4OrthoRH(10,10,1,20).floatArray());
 
         glUniform1f(locTimeLight, time);
 
         glUniform1f(locTypeLight, 0);
         glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(1).mul(new Mat4RotX(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 1);
         glUniformMatrix4fv (locModelLight, false,
@@ -182,7 +199,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 3);
         glUniformMatrix4fv (locModelLight, false,
-               new Mat4Scale(7).mul(new Mat4Transl(0,0,-8)).floatArray());
+               new Mat4Scale(5).mul(new Mat4Transl(0,0,-6)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 4);
         glUniformMatrix4fv (locModelLight, false,
@@ -217,10 +234,17 @@ public class Renderer extends AbstractRenderer{
         glClearColor(0.5f,0f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
+        glUniform3f(lightPos,(float)light.getX(), (float)light.getY(), (float)light.getZ());
+
 
         glUniformMatrix4fv(locView, false, camera.getViewMatrix().floatArray());
         glUniformMatrix4fv(locProjection, false, projection.floatArray());
-        glUniformMatrix4fv(locLightVP,false,cameraLight.getViewMatrix().mul(projection).floatArray());
+
+        Mat4 matMVPlight =  new Mat4ViewRH(light, light.mul(-1), new Vec3D(0,1,0))
+                .mul(new Mat4OrthoRH(10,10,1,20));
+
+        glUniformMatrix4fv(locLightVP,false, matMVPlight.floatArray());
 
 
 
@@ -235,7 +259,7 @@ public class Renderer extends AbstractRenderer{
 
         glUniform1f(locType, 0);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(1).mul(new Mat4RotX(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 1);
         glUniformMatrix4fv (locModel, false,
@@ -247,7 +271,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 3);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(7).mul(new Mat4Transl(0,0,-8)).floatArray());
+                new Mat4Scale(5).mul(new Mat4Transl(0,0,-6)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 4);
         glUniformMatrix4fv (locModel, false,
@@ -263,9 +287,8 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 7);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(0.4).mul(new Mat4RotY(rotLight)).floatArray());
+                new Mat4Scale(0.4).mul(new Mat4Transl(0,0,15)).mul(new Mat4RotY(rotLight)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
-
     }
 
 

@@ -1,5 +1,5 @@
 #version 150
-in vec2 inPosition; // input from the vertex buffer
+in vec2 inPosition;
 
 uniform mat4 view;
 uniform mat4 projection;
@@ -41,7 +41,6 @@ vec3 getMySpheric(vec2 vec) {
     float x = r*cos(az)*cos(ze);
     float y = r*sin(az)*cos(ze);
     float z = r*sin(ze);
-
     return vec3(x,y,z);
 }
 
