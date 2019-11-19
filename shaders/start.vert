@@ -16,6 +16,7 @@ out vec3 viewDirection;
 out vec4 depthTextureCoord;
 out vec2 texCoord;
 out vec3 depthColor;
+out vec4 pos4;
 
 vec3 getSun(vec2 vec){
 	float az = vec.x * 3.14;
@@ -181,7 +182,6 @@ vec3 getCylindricNormal(vec2 vec){
 
 void main() {
 	vec2 position;
-	vec4 pos4;
 	if(type==0){
 		position = inPosition * 2 - 1;
 		//  vec4 pos4 = vec4(position, getZ(position), 1.0);

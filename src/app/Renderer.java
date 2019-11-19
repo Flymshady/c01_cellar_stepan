@@ -49,12 +49,16 @@ public class Renderer extends AbstractRenderer{
     private float time;
     private float rot1 = 0;
     private boolean rot1B = true;
+    private String rot1String = "[On]";
     private float rotLight = 0;
     private boolean rotLightB = true;
+    private String rotLString = "[On]";
     private boolean persp=true;
     private int mode=1;
     private int modeLoc;
-    private String modeString="Texture";
+    private String modeString="[Texture]";
+    private String projString = "[Perps]";
+    private String lineString="[Fill]";
 
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer viewer;
@@ -154,13 +158,15 @@ public class Renderer extends AbstractRenderer{
 
 
         textRenderer.clear();
-        String text = new String("Camera - WSAD, L_SHIFT, L_CTRL, R, F, SPACE, LMB, Scroll " );
-        String text1 = new String("Fill/Line - L, Object rotation - O, Light rotation - P" );
-        String text2 =  new String("1, 2, 3 - Mode: "+modeString);
+        String text = new String("Camera - WSAD, L_SHIFT, L_CTRL, R, F, SPACE, LMB, Scroll");
+        String text1 = new String("Fill/Line - L : "+lineString+"; Object rotation - O : "+rot1String+"; Light rotation - P : "+rotLString );
+        String text2 =  new String("Mode - 1, 2, 3, 4, 5, 6: "+modeString);
+        String text3 = new String( "Persp/Orto projection - U: "+projString);
         textRenderer.addStr2D(3, height-3, text);
         textRenderer.addStr2D(3, height-15, text1);
-        textRenderer.addStr2D(3, height-27, text2);
-        textRenderer.addStr2D(width-185, height-3, "Štěpán Cellar - PGRF3 - 2019");
+        textRenderer.addStr2D(3, height-27, text3);
+        textRenderer.addStr2D(3, height-39, text2);
+        textRenderer.addStr2D(width-170, height-3, "Štěpán Cellar - PGRF3 - 2019");
         textRenderer.draw();
 
         viewer.view(renderTarget.getColorTexture(), -1,0,0.5);
@@ -221,7 +227,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 5);
         glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
+                new Mat4Scale(1).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 6);
         glUniformMatrix4fv (locModelLight, false,
@@ -297,7 +303,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 5);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
+                new Mat4Scale(1).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 6);
         glUniformMatrix4fv (locModel, false,
@@ -347,62 +353,79 @@ public class Renderer extends AbstractRenderer{
                     case GLFW_KEY_L:
                         if(line){
                             line=false;
+                            lineString="[Fill]";
                         }else{
                             line=true;
+                            lineString="[Line]";
                         }
                         break;
                     case GLFW_KEY_O:
                         if(rot1B){
                             rot1B=false;
+                            rot1String="[Off]";
                         }else{
                             rot1B=true;
+                            rot1String="[On]";
                         }
                         break;
                     case GLFW_KEY_P:
                         if(rotLightB){
                             rotLightB=false;
+                            rotLString="[Off]";
                         }else{
                             rotLightB=true;
+                            rotLString="[On]";
                         }
                         break;
                     case GLFW_KEY_U:
                         if(persp){
                             persp=false;
+                            projString="[Ortho]";
                         }else{
                             persp=true;
+                            projString="[Persp]";
                         }
                         break;
                     case GLFW_KEY_1:
                         mode=1;
-                        modeString="Texture";
+                        modeString="[Texture]";
                         break;
                     case GLFW_KEY_2:
                         mode=2;
-                        modeString="Normal";
+                        modeString="[Normal]";
                         break;
                     case GLFW_KEY_3:
                         mode=3;
-                        modeString="TextureCoord";
+                        modeString="[TextureCoord]";
                         break;
                     case GLFW_KEY_4:
                         mode=4;
-                        modeString="VertexColor";
+                        modeString="[VertexColor]";
                         break;
                     case GLFW_KEY_5:
                         mode=5;
-                        modeString="DepthColor";
+                        modeString="[DepthColor]";
+                        break;
+                    case GLFW_KEY_6:
+                        mode=6;
+                        modeString="[Color]";
                         break;
                 }
             }
         }
     };
-    
+
     private GLFWWindowSizeCallback wsCallback = new GLFWWindowSizeCallback() {
         @Override
         public void invoke(long window, int w, int h) {
-            if (w > 0 && h > 0) {
+            if (w > 0 && h > 0 &&
+                    (w != width || h != height)) {
                 width = w;
                 height = h;
+                projection = new Mat4PerspRH(Math.PI / 3,
+                        LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH, 1, 50);
+                if (textRenderer != null)
+                    textRenderer.resize(width, height);
             }
         }
     };

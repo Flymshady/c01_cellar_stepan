@@ -8,6 +8,7 @@ in vec3 viewDirection;
 in vec4 depthTextureCoord;
 in vec2 texCoord;
 in vec3 depthColor;
+in vec4 pos4;
 
 uniform sampler2D depthTexture;
 uniform sampler2D texture1;
@@ -37,6 +38,7 @@ void main() {
 	vec4 textureCoordColor = vec4(texCoord,1,1);
 	vec4 depthColor4 = vec4(depthColor,1);
 	vec4 vertColor4 = vec4(vertColor,1);
+	vec4 color = pos4.rgba;
 
 	bool shadow = zL < zA - bias;
 
@@ -64,16 +66,27 @@ void main() {
 		}else {
 			outColor=textureCoordColor * finalColor;
 		}
+		break;
 		case 4: //vertexColor
+
 		if(shadow) {
 			outColor = ambient *vertColor4;
 		}else {
 			outColor= vertColor4 * finalColor;
-		}case 5: //depthColor
+		}
+		break;
+		case 5: //depthColor
 		if(shadow) {
 			outColor = ambient *depthColor4;
 		}else {
 			outColor=depthColor4 * finalColor;
+		}
+		break;
+		case 6: //depthColor
+		if(shadow) {
+			outColor = ambient *vertColor4;
+		}else {
+			outColor=color * finalColor;
 		}
 		break;
 		default:
