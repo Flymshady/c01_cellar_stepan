@@ -45,15 +45,18 @@ vec3 getMySpheric(vec2 vec) {
 }
 
 vec3 getMySombrero(vec2 vec) {
-    float az = vec.x*3.14/2;//theta=s
+
+
+    float az = vec.x*3.14;//theta=s
     float r = vec.y*3.14;//r=t
-    float v = cos(2*r)+1;
+    float v = cos(2*r);
 
     float x = r*cos(az);
     float y = r*sin(az);
     float z = v;
 
     return vec3(x, y, z);
+
 }
 
 vec3 getMyCylindric(vec2 vec) {
@@ -110,7 +113,7 @@ void main() {
     if(type==4){
         //metoda na rozvetveni objektu pres type == 1 ...
         vec2 position;
-        position = inPosition * 2 - 1;
+        position = inPosition * 2-1;
         vec4 pos4 = vec4(getMySombrero(position), 1.0);
         gl_Position = projection * view *model* pos4;
     }

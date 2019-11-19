@@ -41,6 +41,7 @@ public class Renderer extends AbstractRenderer{
     private int locModel;
     private int locModelLight;
     private Mat4PerspRH projection;
+    private Mat4OrthoRH projectionOH;
     private Camera camera;
     private int locTime;
     private int locType, locTypeLight;
@@ -50,6 +51,10 @@ public class Renderer extends AbstractRenderer{
     private boolean rot1B = true;
     private float rotLight = 0;
     private boolean rotLightB = true;
+    private boolean persp=true;
+    private int mode=1;
+    private int modeLoc;
+    private String modeString="Texture";
 
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer viewer;
@@ -92,6 +97,8 @@ public class Renderer extends AbstractRenderer{
         buffers = GridFactory.generateGrid(100,100);
         renderTarget = new OGLRenderTarget(1024,1024);
 
+        modeLoc =  glGetUniformLocation(shaderProgram, "mode");
+
         viewer = new OGLTexture2D.Viewer();
         textRenderer = new OGLTextRenderer(width, height);
 
@@ -115,9 +122,13 @@ public class Renderer extends AbstractRenderer{
                 .withZenith(-1/5f*Math.PI);
 
 
-        projection = new Mat4PerspRH(Math.PI/3,
+        projection = new Mat4PerspRH(Math.PI / 3,
                 //aktualizovat po rozsireni okna pres windowsizecallback
                 LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH, 1, 50);
+
+        projectionOH= new Mat4OrthoRH(15, 15, 1,50);
+
+
     }
     public void display(){
 
@@ -145,8 +156,10 @@ public class Renderer extends AbstractRenderer{
         textRenderer.clear();
         String text = new String("Camera - WSAD, L_SHIFT, L_CTRL, R, F, SPACE, LMB, Scroll " );
         String text1 = new String("Fill/Line - L, Object rotation - O, Light rotation - P" );
+        String text2 =  new String("1, 2, 3 - Mode: "+modeString);
         textRenderer.addStr2D(3, height-3, text);
         textRenderer.addStr2D(3, height-15, text1);
+        textRenderer.addStr2D(3, height-27, text2);
         textRenderer.addStr2D(width-185, height-3, "Štěpán Cellar - PGRF3 - 2019");
         textRenderer.draw();
 
@@ -164,6 +177,7 @@ public class Renderer extends AbstractRenderer{
         glUseProgram(shaderProgram);
         Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
         glUniform3f(lightPos,(float)light.getX(), (float)light.getY(), (float)light.getZ());
+        glUniform1i(modeLoc, mode);
         glUseProgram(shaderProgramLight);
 
 
@@ -203,7 +217,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 4);
         glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
+                new Mat4Scale(0.2).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
         glUniform1f(locTypeLight, 5);
         glUniformMatrix4fv (locModelLight, false,
@@ -239,7 +253,11 @@ public class Renderer extends AbstractRenderer{
 
 
         glUniformMatrix4fv(locView, false, camera.getViewMatrix().floatArray());
-        glUniformMatrix4fv(locProjection, false, projection.floatArray());
+        if(persp) {
+            glUniformMatrix4fv(locProjection, false, projection.floatArray());
+        }else {
+            glUniformMatrix4fv(locProjection, false, projectionOH.floatArray());
+        }
 
         Mat4 matMVPlight =  new Mat4ViewRH(light, light.mul(-1), new Vec3D(0,1,0))
                 .mul(new Mat4OrthoRH(10,10,1,20));
@@ -275,7 +293,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 4);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
+                new Mat4Scale(0.2).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 5);
         glUniformMatrix4fv (locModel, false,
@@ -346,6 +364,33 @@ public class Renderer extends AbstractRenderer{
                         }else{
                             rotLightB=true;
                         }
+                        break;
+                    case GLFW_KEY_U:
+                        if(persp){
+                            persp=false;
+                        }else{
+                            persp=true;
+                        }
+                        break;
+                    case GLFW_KEY_1:
+                        mode=1;
+                        modeString="Texture";
+                        break;
+                    case GLFW_KEY_2:
+                        mode=2;
+                        modeString="Normal";
+                        break;
+                    case GLFW_KEY_3:
+                        mode=3;
+                        modeString="TextureCoord";
+                        break;
+                    case GLFW_KEY_4:
+                        mode=4;
+                        modeString="VertexColor";
+                        break;
+                    case GLFW_KEY_5:
+                        mode=5;
+                        modeString="DepthColor";
                         break;
                 }
             }
