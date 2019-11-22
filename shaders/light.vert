@@ -58,8 +58,8 @@ vec3 getMySpheric(vec2 vec) {
 vec3 getMySombrero(vec2 vec) {
 
 
-    float az = vec.x*3.14;//theta=s
-    float r = vec.y*3.14;//r=t
+    float az = vec.x*3.14;
+    float r = vec.y*3.14;
     float v = cos(2*r);
 
     float x = r*cos(az);
@@ -94,18 +94,14 @@ vec3 getKart(vec2 vec){
 void main() {
 
     if(type==0){
-        //metoda na rozvetveni objektu pres type == 1 ...
         vec2 position;
         position = inPosition * 2 - 1;
-        //  vec4 pos4 = vec4(position, getZ(position), 1.0);
         vec4 pos4 = vec4(getMySpheric(position), 1.0);
         gl_Position = projection * view *model* pos4;
     }
     if(type==1){
-        //metoda na rozvetveni objektu pres type == 1 ...
         vec2 position;
         position = inPosition * 2 - 1;
-        //  vec4 pos4 = vec4(position, getZ(position), 1.0);
         vec4 pos4 = vec4(getElephant(position), 1.0);
         gl_Position = projection * view *model* pos4;
     }
@@ -113,9 +109,6 @@ void main() {
         vec2 position = inPosition * 2 - 1;
         vec4 pos4 = vec4(position, getZ(position), 1.0);
         gl_Position = projection * view *model* pos4;
-
-
-
     }
     if(type==3){
         vec2 position = inPosition * 2 - 1;
@@ -123,14 +116,12 @@ void main() {
         gl_Position = projection * view *model* pos4;
     }
     if(type==4){
-        //metoda na rozvetveni objektu pres type == 1 ...
         vec2 position;
         position = inPosition * 2-1;
         vec4 pos4 = vec4(getMySombrero(position), 1.0);
         gl_Position = projection * view *model* pos4;
     }
     if(type==5){
-        //metoda na rozvetveni objektu pres type == 1 ...
         vec2 position;
         position = inPosition * 2 - 1;
         vec4 pos4 = vec4(getMyCylindric(position), 1.0);
@@ -147,6 +138,4 @@ void main() {
         vec4 pos4 = model*vec4(getPVObject(position), 1.0);
         gl_Position = projection * view * pos4;
     }
-
-
 } 

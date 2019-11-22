@@ -59,6 +59,9 @@ public class Renderer extends AbstractRenderer{
     private String modeString="[Texture]";
     private String projString = "[Perps]";
     private String lineString="[Fill]";
+    private int attenuation=1;
+    private String attenuationString = "[On]";
+    private int locAttenuation;
 
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer viewer;
@@ -68,7 +71,6 @@ public class Renderer extends AbstractRenderer{
 
     double ox, oy;
     boolean mouseButton1 = false;
-    private Camera cameraLight;
     private  int lightPos;
     private int locBlinn_Phong;
     private int blinn_phong=1;
@@ -101,12 +103,12 @@ public class Renderer extends AbstractRenderer{
         locBlinn_Phong =  glGetUniformLocation(shaderProgram, "blinn_phong");
 
         locLightVP = glGetUniformLocation(shaderProgram, "lightViewProjection");
+        locAttenuation=glGetUniformLocation(shaderProgram, "attenuation");
 
         buffers = GridFactory.generateGrid(100,100);
         renderTarget = new OGLRenderTarget(1024,1024);
 
         modeLoc =  glGetUniformLocation(shaderProgram, "mode");
-
         viewer = new OGLTexture2D.Viewer();
         textRenderer = new OGLTextRenderer(width, height);
 
@@ -123,11 +125,6 @@ public class Renderer extends AbstractRenderer{
                 .withZenith(-1/5f*Math.PI)
                 .withFirstPerson(false)
                 .withRadius(6);
-
-        cameraLight = new Camera()
-                .withPosition(new Vec3D(6,6,6))
-                .withAzimuth(5/4f* Math.PI)
-                .withZenith(-1/5f*Math.PI);
 
 
         projection = new Mat4PerspRH(Math.PI / 3,
@@ -166,10 +163,10 @@ public class Renderer extends AbstractRenderer{
 
 
         textRenderer.clear();
-        String text = "Camera - WSAD, L_SHIFT, L_CTRL, R, F, SPACE, LMB, Scroll";
-        String text1 = "Fill/Line - L : "+lineString+"; Object rotation - O : "+rot1String+"; Light rotation - P : "+rotLString;
-        String text2 =  "Mode - 1 - 8: "+modeString+"; Blinn-Phong - B: "+blinn_phongS;
-        String text3 = "Persp/Orto projection - U: "+projString;
+        String text = "Camera - WSAD, L_SHIFT, L_CTRL, Q, E, SPACE, LMB, Scroll";
+        String text1 = "Fill/Line - L : "+lineString+"; Object rotation - U : "+rot1String+"; Light rotation - I : "+rotLString;
+        String text2 =  "Mode - 1 - 8: "+mode+"="+modeString+"; Blinn-Phong - B: "+blinn_phongS +"; Attenuation - O: "+attenuationString;
+        String text3 = "Persp/Orto projection - P: "+projString;
         textRenderer.addStr2D(3, height-3, text);
         textRenderer.addStr2D(3, height-15, text1);
         textRenderer.addStr2D(3, height-27, text3);
@@ -198,6 +195,7 @@ public class Renderer extends AbstractRenderer{
         glUseProgram(shaderProgramLight);
 
 
+
         renderTarget.bind();
         glClearColor(0f,0.5f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -215,7 +213,12 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv(locProjectionLight, false, new Mat4OrthoRH(10,10,1,20).floatArray());
 
         glUniform1f(locTimeLight, time);
-        if(mode!=7 || mode!=8) {
+        if(mode==7 || mode==8) {
+            glUniform1f(locTypeLight, 8);
+            glUniformMatrix4fv (locModelLight, false,
+                    new Mat4Scale(2).mul(new Mat4Transl(3,0,2)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+        }else{
             glUniformMatrix4fv(locModelLight, false,
                     new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(-3, -3, 1)).floatArray());
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
@@ -238,11 +241,6 @@ public class Renderer extends AbstractRenderer{
             glUniform1f(locTypeLight, 6);
             glUniformMatrix4fv(locModelLight, false,
                     new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(-3, 0, 0)).floatArray());
-            buffers.draw(GL_TRIANGLES, shaderProgramLight);
-        }else{
-            glUniform1f(locTypeLight, 8);
-            glUniformMatrix4fv (locModelLight, false,
-                    new Mat4Scale(2).mul(new Mat4Transl(3,0,2)).floatArray());
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
         }
         glUniform1f(locTypeLight, 0);
@@ -269,6 +267,7 @@ public class Renderer extends AbstractRenderer{
 
         glClearColor(0.5f,0f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUniform1i(locAttenuation, attenuation);
 
         Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
         glUniform3f(lightPos,(float)light.getX(), (float)light.getY(), (float)light.getZ());
@@ -365,10 +364,10 @@ public class Renderer extends AbstractRenderer{
                     case GLFW_KEY_SPACE:
                         camera = camera.withFirstPerson(!camera.getFirstPerson());
                         break;
-                    case GLFW_KEY_R:
+                    case GLFW_KEY_Q:
                         camera = camera.mulRadius(0.9f);
                         break;
-                    case GLFW_KEY_F:
+                    case GLFW_KEY_E:
                         camera = camera.mulRadius(1.1f);
                         break;
                     case GLFW_KEY_L:
@@ -380,7 +379,7 @@ public class Renderer extends AbstractRenderer{
                             lineString="[Line]";
                         }
                         break;
-                    case GLFW_KEY_O:
+                    case GLFW_KEY_U:
                         if(rot1B){
                             rot1B=false;
                             rot1String="[Off]";
@@ -389,7 +388,7 @@ public class Renderer extends AbstractRenderer{
                             rot1String="[On]";
                         }
                         break;
-                    case GLFW_KEY_P:
+                    case GLFW_KEY_I:
                         if(rotLightB){
                             rotLightB=false;
                             rotLString="[Off]";
@@ -398,7 +397,7 @@ public class Renderer extends AbstractRenderer{
                             rotLString="[On]";
                         }
                         break;
-                    case GLFW_KEY_U:
+                    case GLFW_KEY_P:
                         if(persp){
                             persp=false;
                             projString="[Ortho]";
@@ -433,11 +432,11 @@ public class Renderer extends AbstractRenderer{
                         break;
                     case GLFW_KEY_7:
                         mode=7;
-                        modeString="[Per Vertex]";
+                        modeString="[Per Vertex] (grid 10x10)";
                         break;
                     case GLFW_KEY_8:
                         mode=8;
-                        modeString="[Per Pixel]";
+                        modeString="[Per Pixel] (grid 10x10)";
                         break;
                     case GLFW_KEY_B:
                         if(blinn_phong==1){
@@ -446,6 +445,15 @@ public class Renderer extends AbstractRenderer{
                         }else{
                             blinn_phongS="[On]";
                             blinn_phong=1;
+                        }
+                        break;
+                    case GLFW_KEY_O:
+                        if(attenuation==1){
+                            attenuationString="[Off]";
+                            attenuation=0;
+                        }else{
+                            attenuationString="[On]";
+                            attenuation=1;
                         }
                         break;
                 }

@@ -19,6 +19,7 @@ out vec2 texCoord;
 out vec3 depthColor;
 out vec4 pos4;
 out float intensity;
+out float dist;
 
 vec3 getSun(vec2 vec){
 	float az = vec.x * 3.14;
@@ -159,9 +160,8 @@ vec3 getWaveNormal(vec2 vec){
 
 vec3 getMySombrero(vec2 vec) {
 
-
-	float az = vec.x*3.14*2;//theta=s
-	float r = vec.y*3.14*2;//r=t
+	float az = vec.x*3.14*2;
+	float r = vec.y*3.14*2;
 	float v = cos(2*r);
 
 	float x = r*cos(az);
@@ -206,14 +206,11 @@ void main() {
 	vec2 position;
 	if(mode==7){
 		if (type==8){
-
 			position = inPosition*2-1;
 			pos4 = model*vec4(getPVObject(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//	normal = mat3(view)*mat3(model)* normalize(getPVObjectNormal(position));
 			normal= normalize(getPVObjectNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getPVObjectNormal(position);
 			light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
 			intensity = dot(light, normal);
 			vertColor=vec3(normal.xyz);
@@ -222,18 +219,14 @@ void main() {
 			position = inPosition * 2 - 1;
 			pos4 = model*vec4(getMySpheric(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//vec4(position, getZ(position) , 1.0);
 			normal= normalize(getMySphericNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getMySphericNormal(position);
-			//normal= inverse(transpose(model*view))*normal;
 			light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
 			intensity = dot(light, normal);
 			vertColor=vec3(normal.xyz);
 		}
 	}else if(mode==8){
 		if (type==8){
-
 			position = inPosition*2-1;
 			pos4 = model*vec4(getPVObject(position), 1.0);
 			gl_Position = projection * view * pos4;
@@ -245,7 +238,6 @@ void main() {
 			position = inPosition * 2 - 1;
 			pos4 = model*vec4(getMySpheric(position), 1.0);
 			gl_Position = projection * view * pos4;
-
 			normal= normalize(getMySphericNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
 			light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
@@ -254,38 +246,22 @@ void main() {
 	}else {
 		if (type==0){
 			position = inPosition * 2 - 1;
-			//  vec4 pos4 = vec4(position, getZ(position), 1.0);
 			pos4 = model*vec4(getMySpheric(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//vec4(position, getZ(position) , 1.0);
 			normal= normalize(getMySphericNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getMySphericNormal(position);
-			//normal= inverse(transpose(model*view))*normal;
 		}
 		if (type==1){
 			position = inPosition * 2 - 1;
-			//  vec4 pos4 = vec4(position, getZ(position), 1.0);
 			pos4 = model*vec4(getElephant(position), 1.0);
 			gl_Position = projection * view * pos4;
-
-			//vec4(position, getZ(position) , 1.0);
-
-			// vercol v projektu bude
-			// vertColor = pos4.xyz;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getElephantNormal(position);
 			normal= normalize(getElephantNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
-
-			//normal= inverse(transpose(model*view))*normal;
 		}
 		if (type==2){
 			position = inPosition * 2 - 1;
 			pos4 = model*vec4(position, getZ(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//normal =inverse(transpose(mat3(view)* mat3(model)))*getWaveNormal(position);
-
-			//normal= inverse(transpose(model*view))*normal;
 			normal= normalize(getWaveNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
 		}
@@ -294,9 +270,6 @@ void main() {
 			position = inPosition*2 - 1;
 			pos4 = model*vec4(getDesk(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getDeskNormal(position);
-
-			//normal= inverse(transpose(model*view))*normal;
 			normal= normalize(getDeskNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
 		}
@@ -304,27 +277,20 @@ void main() {
 			position = inPosition*2-1;
 			pos4 = model*vec4(getMySombrero(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getSombreroNormal(position);
 			normal= normalize(getSombreroNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
-			//normal= inverse(transpose(model*view))*normal;
 		}
 		if (type==5){
 			position = inPosition*2-1;
 			pos4 = model*vec4(getMyCylindric(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getCylindricNormal(position);
 			normal= normalize(getCylindricNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
-			//normal= inverse(transpose(model*view))*normal;
 		}
 		if (type==6){
 			position = inPosition*2-1;
 			pos4 = model*vec4(getKart(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getKartNormal(position);
-
-			//normal= inverse(transpose(model*view))*normal;
 			normal= normalize(getKartNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
 		}
@@ -332,22 +298,19 @@ void main() {
 			position = inPosition*2-1;
 			pos4 = model*vec4(getSun(position), 1.0);
 			gl_Position = projection * view * pos4;
-			//normal = inverse(transpose(mat3(view)* mat3(model)))*getSunNormal(position);
 			normal= normalize(getSunNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
-			//normal= inverse(transpose(model*view))*normal;
 		}
 
 		vertColor = pos4.xyz;
 		depthColor = pos4.zzz;
 		light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
-
 		texCoord = inPosition;
-
 		viewDirection = -(view* pos4).xyz;
 		depthTextureCoord = lightViewProjection *pos4;
 		depthTextureCoord.xyz = depthTextureCoord.xyz/depthTextureCoord.w;
 		depthTextureCoord.xyz = (depthTextureCoord.xyz + 1) / 2;
+		dist=length(light);
 	}
 	if (type==7){
 		position = inPosition*2-1;
