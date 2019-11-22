@@ -43,7 +43,6 @@ void main() {
 
 
 
-
 	vec4 finalColor;
 	if(blinn_phong==1){
 		finalColor = ambient +att*(diffuse +specular);
