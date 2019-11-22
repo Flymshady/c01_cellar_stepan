@@ -70,6 +70,9 @@ public class Renderer extends AbstractRenderer{
     boolean mouseButton1 = false;
     private Camera cameraLight;
     private  int lightPos;
+    private int locBlinn_Phong;
+    private int blinn_phong=1;
+    private String blinn_phongS="[On]";
 
     private boolean line = false;
 
@@ -95,6 +98,7 @@ public class Renderer extends AbstractRenderer{
         locModelLight =  glGetUniformLocation(shaderProgramLight, "model");
 
         lightPos =  glGetUniformLocation(shaderProgram, "lightPos");
+        locBlinn_Phong =  glGetUniformLocation(shaderProgram, "blinn_phong");
 
         locLightVP = glGetUniformLocation(shaderProgram, "lightViewProjection");
 
@@ -137,6 +141,11 @@ public class Renderer extends AbstractRenderer{
     public void display(){
 
 
+        if(mode==7||mode==8){
+            buffers = GridFactory.generateGrid(10,10);
+        }else{
+            buffers = GridFactory.generateGrid(100,100);
+        }
         if(rot1B) {
             rot1 += 0.01;
         }
@@ -152,16 +161,15 @@ public class Renderer extends AbstractRenderer{
         }
         time += 0.1;
 
-
         renderFromLight();
         renderFromViewer();
 
 
         textRenderer.clear();
-        String text = new String("Camera - WSAD, L_SHIFT, L_CTRL, R, F, SPACE, LMB, Scroll");
-        String text1 = new String("Fill/Line - L : "+lineString+"; Object rotation - O : "+rot1String+"; Light rotation - P : "+rotLString );
-        String text2 =  new String("Mode - 1, 2, 3, 4, 5, 6: "+modeString);
-        String text3 = new String( "Persp/Orto projection - U: "+projString);
+        String text = "Camera - WSAD, L_SHIFT, L_CTRL, R, F, SPACE, LMB, Scroll";
+        String text1 = "Fill/Line - L : "+lineString+"; Object rotation - O : "+rot1String+"; Light rotation - P : "+rotLString;
+        String text2 =  "Mode - 1 - 8: "+modeString+"; Blinn-Phong - B: "+blinn_phongS;
+        String text3 = "Persp/Orto projection - U: "+projString;
         textRenderer.addStr2D(3, height-3, text);
         textRenderer.addStr2D(3, height-15, text1);
         textRenderer.addStr2D(3, height-27, text3);
@@ -169,8 +177,10 @@ public class Renderer extends AbstractRenderer{
         textRenderer.addStr2D(width-170, height-3, "Štěpán Cellar - PGRF3 - 2019");
         textRenderer.draw();
 
-        viewer.view(renderTarget.getColorTexture(), -1,0,0.5);
-        viewer.view(renderTarget.getDepthTexture(), -1,-0.5,0.5);
+
+        viewer.view(renderTarget.getColorTexture(), -1, 0, 0.5);
+        viewer.view(renderTarget.getDepthTexture(), -1, -0.5, 0.5);
+
 
 
 
@@ -184,6 +194,7 @@ public class Renderer extends AbstractRenderer{
         Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
         glUniform3f(lightPos,(float)light.getX(), (float)light.getY(), (float)light.getZ());
         glUniform1i(modeLoc, mode);
+        glUniform1i(locBlinn_Phong, blinn_phong);
         glUseProgram(shaderProgramLight);
 
 
@@ -204,34 +215,39 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv(locProjectionLight, false, new Mat4OrthoRH(10,10,1,20).floatArray());
 
         glUniform1f(locTimeLight, time);
-
+        if(mode!=7 || mode!=8) {
+            glUniformMatrix4fv(locModelLight, false,
+                    new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(-3, -3, 1)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+            glUniform1f(locTypeLight, 2);
+            glUniformMatrix4fv(locModelLight, false,
+                    new Mat4Scale(1).mul(new Mat4Transl(0, 3, 0)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+            glUniform1f(locTypeLight, 3);
+            glUniformMatrix4fv(locModelLight, false,
+                    new Mat4Scale(5).mul(new Mat4Transl(0, 0, -6)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+            glUniform1f(locTypeLight, 4);
+            glUniformMatrix4fv(locModelLight, false,
+                    new Mat4Scale(0.2).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0, -3, 0)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+            glUniform1f(locTypeLight, 5);
+            glUniformMatrix4fv(locModelLight, false,
+                    new Mat4Scale(0.5).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3, 0, 2)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+            glUniform1f(locTypeLight, 6);
+            glUniformMatrix4fv(locModelLight, false,
+                    new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(-3, 0, 0)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+        }else{
+            glUniform1f(locTypeLight, 8);
+            glUniformMatrix4fv (locModelLight, false,
+                    new Mat4Scale(2).mul(new Mat4Transl(3,0,2)).floatArray());
+            buffers.draw(GL_TRIANGLES, shaderProgramLight);
+        }
         glUniform1f(locTypeLight, 0);
-        glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
-        buffers.draw(GL_TRIANGLES, shaderProgramLight);
-        glUniform1f(locTypeLight, 1);
-        glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(-3,-3,1)).floatArray());
-        buffers.draw(GL_TRIANGLES, shaderProgramLight);
-        glUniform1f(locTypeLight, 2);
-        glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(1).mul(new Mat4Transl(0,3,0)).floatArray());
-        buffers.draw(GL_TRIANGLES, shaderProgramLight);
-        glUniform1f(locTypeLight, 3);
-        glUniformMatrix4fv (locModelLight, false,
-               new Mat4Scale(5).mul(new Mat4Transl(0,0,-6)).floatArray());
-        buffers.draw(GL_TRIANGLES, shaderProgramLight);
-        glUniform1f(locTypeLight, 4);
-        glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(0.2).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
-        buffers.draw(GL_TRIANGLES, shaderProgramLight);
-        glUniform1f(locTypeLight, 5);
-        glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(1).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
-        buffers.draw(GL_TRIANGLES, shaderProgramLight);
-        glUniform1f(locTypeLight, 6);
-        glUniformMatrix4fv (locModelLight, false,
-                new Mat4Scale(0.5).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(-3,0,0)).floatArray());
+        glUniformMatrix4fv(locModelLight, false,
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3, 3, 1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
 
 
@@ -303,7 +319,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 5);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(1).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
+                new Mat4Scale(0.5).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 6);
         glUniformMatrix4fv (locModel, false,
@@ -313,6 +329,11 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv (locModel, false,
                 new Mat4Scale(0.4).mul(new Mat4Transl(0,0,15)).mul(new Mat4RotY(rotLight)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
+        glUniform1f(locType, 8);
+        glUniformMatrix4fv (locModel, false,
+                new Mat4Scale(1).floatArray());
+        buffers.draw(GL_TRIANGLES, shaderProgram);
+
     }
 
 
@@ -409,6 +430,23 @@ public class Renderer extends AbstractRenderer{
                     case GLFW_KEY_6:
                         mode=6;
                         modeString="[Color]";
+                        break;
+                    case GLFW_KEY_7:
+                        mode=7;
+                        modeString="[Per Vertex]";
+                        break;
+                    case GLFW_KEY_8:
+                        mode=8;
+                        modeString="[Per Pixel]";
+                        break;
+                    case GLFW_KEY_B:
+                        if(blinn_phong==1){
+                            blinn_phongS="[Off]";
+                            blinn_phong=0;
+                        }else{
+                            blinn_phongS="[On]";
+                            blinn_phong=1;
+                        }
                         break;
                 }
             }

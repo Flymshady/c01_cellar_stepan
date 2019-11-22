@@ -8,6 +8,7 @@ uniform mat4 lightViewProjection;
 uniform float type;
 uniform mat4 model;
 uniform vec3 lightPos;
+uniform int mode;
 
 out vec3 vertColor;
 out vec3 normal;
@@ -17,6 +18,7 @@ out vec4 depthTextureCoord;
 out vec2 texCoord;
 out vec3 depthColor;
 out vec4 pos4;
+out float intensity;
 
 vec3 getSun(vec2 vec){
 	float az = vec.x * 3.14;
@@ -28,6 +30,26 @@ vec3 getSun(vec2 vec){
 	float z = r*sin(ze);
 
 	return vec3(x,y,z);
+}
+
+vec3 getPVObject(vec2 vec){
+	float az = vec.x * 3.14;
+	float ze = vec.y * 3.14/2;
+	float r = 1;
+
+	float x = r*cos(az)*cos(ze);
+	float y = 2*r*sin(az)*cos(ze);
+	float z = 0.5*r*sin(ze);
+
+	return vec3(x,y,z);
+}
+
+vec3 getPVObjectNormal(vec2 vec){
+	vec3 u = getPVObject(vec+vec2(0.001, 0))
+	- getPVObject(vec-vec2(0.001,0));
+	vec3 v = getPVObject(vec+vec2(0, 0.001))
+	- getPVObject(vec-vec2(0, 0.001));
+	return cross(u,v);
 }
 
 vec3 getSunNormal(vec2 vec){
@@ -161,7 +183,7 @@ vec3 getSombreroNormal(vec2 vec){
 
 vec3 getMyCylindric(vec2 vec) {
 	float az = vec.x*3.14;
-	float r = vec.y*3.14/2;
+	float r = vec.y*3.14;
 	float v = r;
 
 	float x = r*cos(az);
@@ -182,92 +204,156 @@ vec3 getCylindricNormal(vec2 vec){
 
 void main() {
 	vec2 position;
-	if(type==0){
-		position = inPosition * 2 - 1;
-		//  vec4 pos4 = vec4(position, getZ(position), 1.0);
-		pos4 = model*vec4(getMySpheric(position), 1.0);
-		gl_Position = projection * view * pos4;
-		//vec4(position, getZ(position) , 1.0);
+	if(mode==7){
+		if (type==8){
 
-		normal = inverse(transpose(mat3(view)* mat3(model)))*getMySphericNormal(position);
-		//normal= inverse(transpose(model*view))*normal;
+			position = inPosition*2-1;
+			pos4 = model*vec4(getPVObject(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//	normal = mat3(view)*mat3(model)* normalize(getPVObjectNormal(position));
+			normal= normalize(getPVObjectNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getPVObjectNormal(position);
+			light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
+			intensity = dot(light, normal);
+			vertColor=vec3(normal.xyz);
+		}
+		if (type==0){
+			position = inPosition * 2 - 1;
+			pos4 = model*vec4(getMySpheric(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//vec4(position, getZ(position) , 1.0);
+			normal= normalize(getMySphericNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getMySphericNormal(position);
+			//normal= inverse(transpose(model*view))*normal;
+			light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
+			intensity = dot(light, normal);
+			vertColor=vec3(normal.xyz);
+		}
+	}else if(mode==8){
+		if (type==8){
+
+			position = inPosition*2-1;
+			pos4 = model*vec4(getPVObject(position), 1.0);
+			gl_Position = projection * view * pos4;
+			normal= normalize(getPVObjectNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
+		}
+		if (type==0){
+			position = inPosition * 2 - 1;
+			pos4 = model*vec4(getMySpheric(position), 1.0);
+			gl_Position = projection * view * pos4;
+
+			normal= normalize(getMySphericNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
+
+		}
+	}else {
+		if (type==0){
+			position = inPosition * 2 - 1;
+			//  vec4 pos4 = vec4(position, getZ(position), 1.0);
+			pos4 = model*vec4(getMySpheric(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//vec4(position, getZ(position) , 1.0);
+			normal= normalize(getMySphericNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getMySphericNormal(position);
+			//normal= inverse(transpose(model*view))*normal;
+		}
+		if (type==1){
+			position = inPosition * 2 - 1;
+			//  vec4 pos4 = vec4(position, getZ(position), 1.0);
+			pos4 = model*vec4(getElephant(position), 1.0);
+			gl_Position = projection * view * pos4;
+
+			//vec4(position, getZ(position) , 1.0);
+
+			// vercol v projektu bude
+			// vertColor = pos4.xyz;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getElephantNormal(position);
+			normal= normalize(getElephantNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+
+			//normal= inverse(transpose(model*view))*normal;
+		}
+		if (type==2){
+			position = inPosition * 2 - 1;
+			pos4 = model*vec4(position, getZ(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//normal =inverse(transpose(mat3(view)* mat3(model)))*getWaveNormal(position);
+
+			//normal= inverse(transpose(model*view))*normal;
+			normal= normalize(getWaveNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+		}
+
+		if (type==3){
+			position = inPosition*2 - 1;
+			pos4 = model*vec4(getDesk(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getDeskNormal(position);
+
+			//normal= inverse(transpose(model*view))*normal;
+			normal= normalize(getDeskNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+		}
+		if (type==4){
+			position = inPosition*2-1;
+			pos4 = model*vec4(getMySombrero(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getSombreroNormal(position);
+			normal= normalize(getSombreroNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			//normal= inverse(transpose(model*view))*normal;
+		}
+		if (type==5){
+			position = inPosition*2-1;
+			pos4 = model*vec4(getMyCylindric(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getCylindricNormal(position);
+			normal= normalize(getCylindricNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			//normal= inverse(transpose(model*view))*normal;
+		}
+		if (type==6){
+			position = inPosition*2-1;
+			pos4 = model*vec4(getKart(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getKartNormal(position);
+
+			//normal= inverse(transpose(model*view))*normal;
+			normal= normalize(getKartNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+		}
+		if (type==7){
+			position = inPosition*2-1;
+			pos4 = model*vec4(getSun(position), 1.0);
+			gl_Position = projection * view * pos4;
+			//normal = inverse(transpose(mat3(view)* mat3(model)))*getSunNormal(position);
+			normal= normalize(getSunNormal(position));
+			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
+			//normal= inverse(transpose(model*view))*normal;
+		}
+
+		vertColor = pos4.xyz;
+		depthColor = pos4.zzz;
+		light = normalize(mat3(view)*lightPos - (view * pos4).xyz);
+
+		texCoord = inPosition;
+
+		viewDirection = -(view* pos4).xyz;
+		depthTextureCoord = lightViewProjection *pos4;
+		depthTextureCoord.xyz = depthTextureCoord.xyz/depthTextureCoord.w;
+		depthTextureCoord.xyz = (depthTextureCoord.xyz + 1) / 2;
 	}
-	if(type==1){
-		position = inPosition * 2 - 1;
-		//  vec4 pos4 = vec4(position, getZ(position), 1.0);
-		pos4 = model*vec4(getElephant(position), 1.0);
-		gl_Position = projection * view * pos4;
-
-		//vec4(position, getZ(position) , 1.0);
-
-		// vercol v projektu bude
-		// vertColor = pos4.xyz;
-		normal = inverse(transpose(mat3(view)* mat3(model)))*getElephantNormal(position);
-
-		//normal= inverse(transpose(model*view))*normal;
-	}
-	if(type==2){
-		position = inPosition * 2 - 1;
-		pos4 = model*vec4(position, getZ(position), 1.0);
-		gl_Position = projection * view * pos4;
-		normal =inverse(transpose(mat3(view)* mat3(model)))*getWaveNormal(position);
-
-		//normal= inverse(transpose(model*view))*normal;
-	}
-
-	if(type==3){
-		position = inPosition*2 - 1;
-		pos4 = model*vec4(getDesk(position), 1.0);
-		gl_Position = projection * view * pos4;
-		normal = inverse(transpose(mat3(view)* mat3(model)))*getDeskNormal(position);
-
-		//normal= inverse(transpose(model*view))*normal;
-	}
-	if(type==4){
-		position = inPosition*2-1;
-		pos4 = model*vec4(getMySombrero(position), 1.0);
-		gl_Position = projection * view * pos4;
-		normal = inverse(transpose(mat3(view)* mat3(model)))*getSombreroNormal(position);
-
-		//normal= inverse(transpose(model*view))*normal;
-	}
-	if(type==5){
-		position = inPosition*2-1;
-		pos4 = model*vec4(getMyCylindric(position), 1.0);
-		gl_Position = projection * view * pos4;
-		normal = inverse(transpose(mat3(view)* mat3(model)))*getCylindricNormal(position);
-
-		//normal= inverse(transpose(model*view))*normal;
-	}
-	if(type==6){
-		position = inPosition*2-1;
-		pos4 = model*vec4(getKart(position), 1.0);
-		gl_Position = projection * view * pos4;
-		normal = inverse(transpose(mat3(view)* mat3(model)))*getKartNormal(position);
-
-		//normal= inverse(transpose(model*view))*normal;
-	}
-	if(type==7){
+	if (type==7){
 		position = inPosition*2-1;
 		pos4 = model*vec4(getSun(position), 1.0);
 		gl_Position = projection * view * pos4;
-		normal = inverse(transpose(mat3(view)* mat3(model)))*getSunNormal(position);
-
-		//normal= inverse(transpose(model*view))*normal;
+		normal= normalize(getSunNormal(position));
+		normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
 	}
-
-	vertColor = pos4.xyz;
-	depthColor = pos4.zzz;
-	light = mat3(view)*lightPos - (view * pos4).xyz;
-
-	texCoord = inPosition;
-
-	viewDirection = -(view* pos4).xyz;
-	depthTextureCoord = lightViewProjection *pos4;
-	depthTextureCoord.xyz = depthTextureCoord.xyz/depthTextureCoord.w;
-	depthTextureCoord.xyz = (depthTextureCoord.xyz + 1) / 2;
-
-
-
-
 } 

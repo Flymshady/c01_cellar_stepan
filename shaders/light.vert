@@ -20,6 +20,17 @@ vec3 getDesk(vec2 vec){
 }
 
 
+vec3 getPVObject(vec2 vec){
+    float az = vec.x * 3.14;
+    float ze = vec.y * 3.14/2;
+    float r = 1;
+
+    float x = r*cos(az)*cos(ze);
+    float y = 2*r*sin(az)*cos(ze);
+    float z = 0.5*r*sin(ze);
+
+    return vec3(x,y,z);
+}
 vec3 getElephant(vec2 vec) {
     float az = vec.x * 3.14;
     float ze = vec.y * 3.14 / 2;
@@ -60,8 +71,8 @@ vec3 getMySombrero(vec2 vec) {
 }
 
 vec3 getMyCylindric(vec2 vec) {
-    float az = vec.x*3.14;//theta=s
-    float r = vec.y*3.14/2;
+    float az = vec.x*3.14;
+    float r = vec.y*3.14;
     float v = r;
 
     float x = r*cos(az);
@@ -81,6 +92,7 @@ vec3 getKart(vec2 vec){
 
 
 void main() {
+
     if(type==0){
         //metoda na rozvetveni objektu pres type == 1 ...
         vec2 position;
@@ -129,6 +141,11 @@ void main() {
         position = inPosition * 2 - 1;
         vec4 pos4 = vec4(getKart(position), 1.0);
         gl_Position = projection * view *model* pos4;
+    }
+    if(type==8){
+        vec2 position = inPosition*2-1;
+        vec4 pos4 = model*vec4(getPVObject(position), 1.0);
+        gl_Position = projection * view * pos4;
     }
 
 
