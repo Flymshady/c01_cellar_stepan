@@ -51,6 +51,7 @@ void main() {
     vec3 ld = normalize(lightPos - pos4.xyz);
 	vec3 spotDirection=vec3(0,0,6);
 	float spotCutOff=0.975;
+    //spotlight from "sun" object
 	float spotEffect = max(dot(normalize(spotDirection), normalize(ld)),0);
     float blend = clamp((spotEffect-spotCutOff)/(1-spotCutOff),0.0,1.0);
 
@@ -63,7 +64,7 @@ void main() {
 	vec4 vertColor4 = vec4(vertColor,1);
 	vec4 color = vec4(0,1,0,1);
 
-    bool spot =spotEffect>spotCutOff;
+    bool spot = spotEffect>spotCutOff;
 	bool shadow = zL < zA - bias;
 
 	switch(mode){
@@ -87,7 +88,7 @@ void main() {
          }
 		break;
 
-		case 2: //normal
+        case 2: //normal
          if(spotlight==1){
             if(spot){
                 if (shadow) {
@@ -105,7 +106,6 @@ void main() {
                 outColor=normalColor * finalColor;
             }
          }
-
 		break;
 
 		case 3: //textureCoord
@@ -208,7 +208,7 @@ void main() {
 		break;
 
 		default:
-        if(spotlight==1){
+         if(spotlight==1){
             if(spot){
                 if(shadow) {
                     outColor = ambient *textureColor;
@@ -218,15 +218,15 @@ void main() {
             }else{
                 outColor = ambient *textureColor;
             }
-        }else{
+         }else{
             if(shadow) {
                 outColor = ambient *textureColor;
             }else {
                 outColor=textureColor * finalColor;
             }
-        }
+         }
 	}
-
+    //sun
 	if(type==7){
 		outColor=vec4(1,1,1,1);
 	}

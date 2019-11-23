@@ -126,7 +126,7 @@ public class Renderer extends AbstractRenderer{
         }else{
             buffers = GridFactory.generateGrid(100,100);
         }
-
+        //object rotation
         if(rot1B) {
             if(rot1>100f) rot1=0.01f;
             rot1 += 0.01;
@@ -134,7 +134,7 @@ public class Renderer extends AbstractRenderer{
         else{
             rot1+=0;
         }
-
+        //light "sun" rotation
         if(rotLightB) {
             if(rotLight>100f) rotLight=rotLSpeedBonus;
             rotLight +=rotLSpeedBonus;
@@ -181,7 +181,7 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv(locProjectionLight, false, new Mat4OrthoRH(10,10,1,20).floatArray());
 
         glUniform1f(locTimeLight, time);
-        if(mode==7 || mode==8) {
+        if(mode==7 || mode==8) {    //per vertex || per pixel mode
             glUniform1f(locTypeLight, 8);
             glUniformMatrix4fv (locModelLight, false,
                     new Mat4Scale(2).mul(new Mat4Transl(3,0,2)).floatArray());

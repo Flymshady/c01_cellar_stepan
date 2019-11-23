@@ -185,13 +185,12 @@ vec3 getCylindricNormal(vec2 vec){
 
 	vec3 v = getMyCylindric(vec+vec2(0, 0.001))
 	- getMyCylindric(vec-vec2(0, 0.001));
-
 	return cross(u,v);
 }
 
 void main() {
 	vec2 position;
-	if(mode==7){
+	if(mode==7){ //per vertex
 		if (type==8){
 			position = inPosition*2-1;
 			pos4 = model*vec4(getPVObject(position), 1.0);
@@ -212,7 +211,7 @@ void main() {
 			intensity = dot(light, normal);
 			vertColor=vec3(normal.xyz);
 		}
-	}else if(mode==8){
+	}else if(mode==8){ //per pixel
 		if (type==8){
 			position = inPosition*2-1;
 			pos4 = model*vec4(getPVObject(position), 1.0);
@@ -298,7 +297,7 @@ void main() {
 		depthTextureCoord.xyz = (depthTextureCoord.xyz + 1) / 2;
 		dist=length(light);
 	}
-	if (type==7){
+	if (type==7){ //sun object
 		position = inPosition*2-1;
 		pos4 = model*vec4(getSun(position), 1.0);
 		gl_Position = projection * view * pos4;

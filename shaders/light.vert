@@ -7,7 +7,6 @@ uniform float time;
 uniform float type;
 uniform mat4 model;
 
-
 float getZ(vec2 vec) {
     return sin(time + vec.y * 3.14 *2);
 }

@@ -11,25 +11,9 @@ public class GridFactory {
         for (int j =0;j<n;j++){
             for(int i=0;i<m;i++){
                 vb[index++] = i /(float) (m-1);
-              //  System.out.println(i/(float)(m-1));
                 vb[index++] = j /(float) (n-1);
-              //  System.out.println(j/(float)(n-1));
             }
         }
-/*
-        int[] ib = new int[m*n+(m*(n-2))+(2*(n-1))];
-        int index2=0;
-        for(int j=0;j<n-1;j++){
-            int row=0;
-            for(int i=0;i<=m-1;i++){
-                ib[index2++]=j*m+i;
-                ib[index2++]=(j+1)*m+i;
-                row=i;
-            }
-            ib[index2++]=(j+1)*m+row;
-            ib[index2++]=(j+1)*m;
-        }
-*/
 
         int[] ib = new int[(m-1)*(n-1)*2*3];
         int index2=0;
@@ -43,7 +27,6 @@ public class GridFactory {
                 ib[index2++]=(row+i+m);
                 ib[index2++]= (row+i+1);
                 ib[index2++]= (row+i+m+1);
-
             }
         }
 
