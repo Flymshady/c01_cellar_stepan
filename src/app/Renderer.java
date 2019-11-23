@@ -101,7 +101,7 @@ public class Renderer extends AbstractRenderer{
         textRenderer = new OGLTextRenderer(width, height);
 
         try {
-            texture1 = new OGLTexture2D("./textures/mosaic.jpg");
+            texture1 = new OGLTexture2D("res/texture/mosaic.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -249,7 +249,7 @@ public class Renderer extends AbstractRenderer{
 
         glUniformMatrix4fv(locLightVP,false, matMVPlight.floatArray());
         renderTarget.getDepthTexture().bind(shaderProgram, "depthTexture",1);
-        texture1.bind(shaderProgram, "texture/mosaic",0);
+        texture1.bind(shaderProgram, "res/texture/mosaic.jpg",0);
 
         glUniform1f(locTime, time);
         glUniform1f(locType, 0);
