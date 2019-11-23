@@ -171,7 +171,7 @@ public class Renderer extends AbstractRenderer{
         textRenderer.clear();
         String text = "Camera - WSAD, L_SHIFT, L_CTRL, Q, E, SPACE, LMB, Scroll";
         String text1 = "Fill/Line - L : "+lineString+"; Object rotation - U : "+rot1String+"; Light rotation - I : "+rotLString +"; Light rotation speed - ARROW_UP/DOWN";
-        String text2 =  "Mode - 1 - 8: "+mode+"="+modeString+"; Blinn-Phong - H: "+blinn_phongS +"; Attenuation - J: "+attenuationString+"; Spotlight - K:"+spotlightString;
+        String text2 =  "Mode - 1 - 8: "+mode+"="+modeString+"; Blinn-Phong - H: "+blinn_phongS +"; Attenuation - J: "+attenuationString+"; Spotlight - K :"+spotlightString;
         String text3 = "Persp/Orto projection - P: "+projString;
         textRenderer.addStr2D(3, height-3, text);
         textRenderer.addStr2D(3, height-15, text1);
