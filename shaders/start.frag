@@ -57,6 +57,7 @@ void main() {
 	vec3 spotDirection=vec3(0,0,6);
 	float spotCutOff=0.975;
 	float spotEffect = max(dot(normalize(spotDirection), normalize(ld)),0);
+    float blend = clamp((spotEffect-spotCutOff)/(1-spotCutOff),0.0,1.0);
 
 
 
@@ -80,7 +81,7 @@ void main() {
 			    if(shadow) {
 				    outColor = ambient *textureColor;
 			    }else {
-				    outColor=textureColor * finalColor;
+                    outColor=mix((ambient*textureColor),(textureColor*finalColor),blend);
 			    }
              }else{
                 outColor = ambient *textureColor;
@@ -101,7 +102,8 @@ void main() {
                 if (shadow) {
                     outColor = ambient *normalColor;
                 } else {
-                    outColor=normalColor * finalColor;
+                   // outColor=normalColor * finalColor;
+                    outColor=mix((ambient*normalColor),(normalColor*finalColor),blend);
                 }
             } else{
                 outColor = ambient *normalColor;
@@ -122,7 +124,8 @@ void main() {
                  if (shadow) {
                      outColor = ambient *textureCoordColor;
                  } else {
-                     outColor=textureCoordColor * finalColor;
+              //       outColor=textureCoordColor * finalColor;
+                     outColor=mix((ambient*textureCoordColor),(textureCoordColor*finalColor),blend);
                  }
              }else{
                  outColor = ambient *textureCoordColor;
@@ -142,7 +145,8 @@ void main() {
                  if (shadow) {
                      outColor = ambient *vertColor4;
                  } else {
-                     outColor= vertColor4 * finalColor;
+                   //  outColor= vertColor4 * finalColor;
+                     outColor=mix((ambient*vertColor4),(vertColor4*finalColor),blend);
                  }
              } else{
                  outColor = ambient *vertColor4;
@@ -162,7 +166,8 @@ void main() {
                 if (shadow) {
                     outColor = ambient *depthColor4;
                 } else {
-                    outColor= depthColor4 * finalColor;
+                 //   outColor= depthColor4 * finalColor;
+                    outColor=mix((ambient*depthColor4),(depthColor4*finalColor),blend);
                 }
               } else{
                 outColor = ambient *depthColor4;
@@ -182,7 +187,8 @@ void main() {
                 if (shadow) {
                     outColor = ambient *color;
                 } else {
-                    outColor= color * finalColor;
+                    outColor=mix((ambient*color),(color*finalColor),blend);
+                 //   outColor= color * finalColor;
                 }
             } else{
                 outColor = ambient *color;
