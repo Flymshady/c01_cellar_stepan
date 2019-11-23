@@ -18,6 +18,8 @@ uniform int mode;
 uniform int blinn_phong;
 uniform float type;
 uniform int attenuation;
+uniform vec3 lightPos;
+uniform int spotlight;
 
 
 
@@ -50,10 +52,11 @@ void main() {
 		finalColor=vec4(1,1,1,1);
 
 	}
-	vec4 ld = normalize(light);
-	vec3 spotDirection=vec3(0,0,0);
-	float spotCutOff=15;
-	float spotEffect = max(dot(normalize(spotDirection), normalize(-ld)),0);
+
+    vec3 ld = normalize(lightPos - pos4.xyz);
+	vec3 spotDirection=vec3(0,0,6);
+	float spotCutOff=0.975;
+	float spotEffect = max(dot(normalize(spotDirection), normalize(ld)),0);
 
 
 
@@ -67,58 +70,130 @@ void main() {
 	vec4 vertColor4 = vec4(vertColor,1);
 	vec4 color = vec4(0,1,0,1);
 
+    bool spot =spotEffect>spotCutOff;
 	bool shadow = zL < zA - bias;
 
 	switch(mode){
 		case 1: //texture
-			if(shadow) {
-				outColor = ambient *textureColor;
+         if(spotlight==1){
+             if(spot){
+			    if(shadow) {
+				    outColor = ambient *textureColor;
+			    }else {
+				    outColor=textureColor * finalColor;
+			    }
+             }else{
+                outColor = ambient *textureColor;
+             }
+        }else{
+             if(shadow) {
+                 outColor = ambient *textureColor;
+             }else {
+                 outColor=textureColor * finalColor;
+             }
+         }
 
-			}else {
-				outColor=textureColor * finalColor;
-			}
 		break;
 
 		case 2: //normal
-			if(shadow) {
-				outColor = ambient *normalColor;
-			}else {
-				outColor=normalColor * finalColor;
-			}
+         if(spotlight==1){
+            if(spot){
+                if (shadow) {
+                    outColor = ambient *normalColor;
+                } else {
+                    outColor=normalColor * finalColor;
+                }
+            } else{
+                outColor = ambient *normalColor;
+            }
+         }else{
+            if (shadow) {
+                outColor = ambient *normalColor;
+            } else {
+                outColor=normalColor * finalColor;
+            }
+         }
 
 		break;
 
 		case 3: //textureCoord
-			if(shadow) {
-				outColor = ambient *textureCoordColor;
-			}else {
-				outColor=textureCoordColor * finalColor;
-			}
+         if(spotlight==1){
+             if(spot){
+                 if (shadow) {
+                     outColor = ambient *textureCoordColor;
+                 } else {
+                     outColor=textureCoordColor * finalColor;
+                 }
+             }else{
+                 outColor = ambient *textureCoordColor;
+             }
+         }else{
+             if (shadow) {
+                 outColor = ambient *textureCoordColor;
+             } else {
+                 outColor=textureCoordColor * finalColor;
+             }
+         }
 		break;
 
 		case 4: //vertexColor
-
-			if(shadow) {
-				outColor = ambient *vertColor4;
-			}else {
-				outColor= vertColor4 * finalColor;
-			}
+            if(spotlight==1){
+             if (spot){
+                 if (shadow) {
+                     outColor = ambient *vertColor4;
+                 } else {
+                     outColor= vertColor4 * finalColor;
+                 }
+             } else{
+                 outColor = ambient *vertColor4;
+             }
+            }else{
+                if (shadow) {
+                    outColor = ambient *vertColor4;
+                } else {
+                    outColor= vertColor4 * finalColor;
+                }
+            }
 		break;
 
 		case 5: //depthColor
-			if(shadow) {
-				outColor = ambient *depthColor4;
-			}else {
-				outColor=depthColor4 * finalColor;
-			}
+            if(spotlight==1){
+             if (spot){
+                if (shadow) {
+                    outColor = ambient *depthColor4;
+                } else {
+                    outColor= depthColor4 * finalColor;
+                }
+              } else{
+                outColor = ambient *depthColor4;
+              }
+            }else{
+              if (shadow) {
+                  outColor = ambient *depthColor4;
+              } else {
+                outColor= depthColor4 * finalColor;
+            }
+        }
 		break;
 
 		case 6: //color
-			if(shadow) {
-				outColor = ambient *vertColor4;
-			}else {
-				outColor=color * finalColor;
-			}
+        if(spotlight==1){
+            if (spot){
+                if (shadow) {
+                    outColor = ambient *color;
+                } else {
+                    outColor= color * finalColor;
+                }
+            } else{
+                outColor = ambient *color;
+            }
+        }else{
+            if (shadow) {
+                outColor = ambient *color;
+            } else {
+                outColor= color * finalColor;
+            }
+        }
 		break;
 
 		case 7: //per vertex
@@ -147,12 +222,18 @@ void main() {
 				outColor=textureColor * finalColor;
 			}
 	}
+/*
+    if(spotlight==1){
+    if(spot){
+        outColor=vec4(1,1,1,1);
+    }else{
+        outColor=vec4(0,0,0,1);
+    }
+    }else{
+        outColor=vec4(1,0,0,1);
+    }
 
-	if(spotEffect>spotCutOff){
-		outColor=vec4(1,1,1,1);
-	}else{
-		outColor=ambient;
-	}
+*/
 
 	if(type==7){
 		outColor=vec4(1,1,1,1);

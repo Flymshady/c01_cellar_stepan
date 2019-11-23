@@ -62,16 +62,20 @@ public class Renderer extends AbstractRenderer{
     private int attenuation=1;
     private String attenuationString = "[On]";
     private int locAttenuation;
-
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer viewer;
     private OGLTexture2D texture1;
+    private int spotlight=0;
+    private String spotlightString="[Off]";
+    private int locSpotlight;
+    private float rotLSpeedBonus=0.01f;
+
 
     protected OGLTextRenderer textRenderer;
 
     double ox, oy;
     boolean mouseButton1 = false;
-    private  int lightPos;
+    private int lightPos;
     private int locBlinn_Phong;
     private int blinn_phong=1;
     private String blinn_phongS="[On]";
@@ -101,9 +105,11 @@ public class Renderer extends AbstractRenderer{
 
         lightPos =  glGetUniformLocation(shaderProgram, "lightPos");
         locBlinn_Phong =  glGetUniformLocation(shaderProgram, "blinn_phong");
+        locSpotlight =  glGetUniformLocation(shaderProgram, "spotlight");
 
         locLightVP = glGetUniformLocation(shaderProgram, "lightViewProjection");
         locAttenuation=glGetUniformLocation(shaderProgram, "attenuation");
+
 
         buffers = GridFactory.generateGrid(100,100);
         renderTarget = new OGLRenderTarget(1024,1024);
@@ -151,7 +157,7 @@ public class Renderer extends AbstractRenderer{
         }
 
         if(rotLightB) {
-            rotLight += 0.01;
+            rotLight += rotLSpeedBonus;
         }
         else{
             rotLight+=0;
@@ -164,8 +170,8 @@ public class Renderer extends AbstractRenderer{
 
         textRenderer.clear();
         String text = "Camera - WSAD, L_SHIFT, L_CTRL, Q, E, SPACE, LMB, Scroll";
-        String text1 = "Fill/Line - L : "+lineString+"; Object rotation - U : "+rot1String+"; Light rotation - I : "+rotLString;
-        String text2 =  "Mode - 1 - 8: "+mode+"="+modeString+"; Blinn-Phong - B: "+blinn_phongS +"; Attenuation - O: "+attenuationString;
+        String text1 = "Fill/Line - L : "+lineString+"; Object rotation - U : "+rot1String+"; Light rotation - I : "+rotLString +"; Light rotation speed - ARROW_UP/DOWN";
+        String text2 =  "Mode - 1 - 8: "+mode+"="+modeString+"; Blinn-Phong - H: "+blinn_phongS +"; Attenuation - J: "+attenuationString+"; Spotlight - K:"+spotlightString;
         String text3 = "Persp/Orto projection - P: "+projString;
         textRenderer.addStr2D(3, height-3, text);
         textRenderer.addStr2D(3, height-15, text1);
@@ -219,12 +225,13 @@ public class Renderer extends AbstractRenderer{
                     new Mat4Scale(2).mul(new Mat4Transl(3,0,2)).floatArray());
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
         }else{
+            glUniform1f(locTypeLight, 1);
             glUniformMatrix4fv(locModelLight, false,
                     new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(-3, -3, 1)).floatArray());
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
             glUniform1f(locTypeLight, 2);
             glUniformMatrix4fv(locModelLight, false,
-                    new Mat4Scale(1).mul(new Mat4Transl(0, 3, 0)).floatArray());
+                    new Mat4Scale(1).mul(new Mat4Transl(-1, 3, 0)).floatArray());
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
             glUniform1f(locTypeLight, 3);
             glUniformMatrix4fv(locModelLight, false,
@@ -232,11 +239,11 @@ public class Renderer extends AbstractRenderer{
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
             glUniform1f(locTypeLight, 4);
             glUniformMatrix4fv(locModelLight, false,
-                    new Mat4Scale(0.2).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0, -3, 0)).floatArray());
+                    new Mat4Scale(0.2).mul(new Mat4RotX(rot1)).mul(new Mat4Transl(1, -3, 0)).floatArray());
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
             glUniform1f(locTypeLight, 5);
             glUniformMatrix4fv(locModelLight, false,
-                    new Mat4Scale(0.5).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3, 0, 2)).floatArray());
+                    new Mat4Scale(0.5).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(2, 0, 2)).floatArray());
             buffers.draw(GL_TRIANGLES, shaderProgramLight);
             glUniform1f(locTypeLight, 6);
             glUniformMatrix4fv(locModelLight, false,
@@ -245,7 +252,7 @@ public class Renderer extends AbstractRenderer{
         }
         glUniform1f(locTypeLight, 0);
         glUniformMatrix4fv(locModelLight, false,
-                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3, 3, 1)).floatArray());
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(2, 3, 1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
 
 
@@ -268,6 +275,10 @@ public class Renderer extends AbstractRenderer{
         glClearColor(0.5f,0f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUniform1i(locAttenuation, attenuation);
+        glUniform1i(locSpotlight, spotlight);
+
+
+
 
         Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
         glUniform3f(lightPos,(float)light.getX(), (float)light.getY(), (float)light.getZ());
@@ -298,7 +309,7 @@ public class Renderer extends AbstractRenderer{
 
         glUniform1f(locType, 0);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(3,3,1)).floatArray());
+                new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(2,3,1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 1);
         glUniformMatrix4fv (locModel, false,
@@ -306,7 +317,7 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 2);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(1).mul(new Mat4Transl(0,3,0)).floatArray());
+                new Mat4Scale(1).mul(new Mat4Transl(-1,3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 3);
         glUniformMatrix4fv (locModel, false,
@@ -314,11 +325,11 @@ public class Renderer extends AbstractRenderer{
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 4);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(0.2).mul(new Mat4RotZ(rot1)).mul(new Mat4Transl(0,-3,0)).floatArray());
+                new Mat4Scale(0.2).mul(new Mat4RotX(rot1)).mul(new Mat4Transl(1,-3,0)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 5);
         glUniformMatrix4fv (locModel, false,
-                new Mat4Scale(0.5).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(3,0,2)).floatArray());
+                new Mat4Scale(0.5).mul(new Mat4RotY(-rot1)).mul(new Mat4Transl(2,0,2)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
         glUniform1f(locType, 6);
         glUniformMatrix4fv (locModel, false,
@@ -438,7 +449,7 @@ public class Renderer extends AbstractRenderer{
                         mode=8;
                         modeString="[Per Pixel] (grid 10x10)";
                         break;
-                    case GLFW_KEY_B:
+                    case GLFW_KEY_H:
                         if(blinn_phong==1){
                             blinn_phongS="[Off]";
                             blinn_phong=0;
@@ -447,7 +458,16 @@ public class Renderer extends AbstractRenderer{
                             blinn_phong=1;
                         }
                         break;
-                    case GLFW_KEY_O:
+                    case GLFW_KEY_K:
+                        if(spotlight==1){
+                            spotlightString="[Off]";
+                            spotlight=0;
+                        }else{
+                            spotlightString="[On]";
+                            spotlight=1;
+                        }
+                        break;
+                    case GLFW_KEY_J:
                         if(attenuation==1){
                             attenuationString="[Off]";
                             attenuation=0;
@@ -456,6 +476,18 @@ public class Renderer extends AbstractRenderer{
                             attenuation=1;
                         }
                         break;
+                    case GLFW_KEY_UP:
+                        if(rotLSpeedBonus<=0.1){
+                            rotLSpeedBonus+=0.005;
+                        }
+                        break;
+                    case GLFW_KEY_DOWN:
+                        if(rotLSpeedBonus>=0.005){
+                            rotLSpeedBonus-=0.005;
+                        }
+                        break;
+
+
                 }
             }
         }
@@ -516,6 +548,7 @@ public class Renderer extends AbstractRenderer{
                 ox = x;
                 oy = y;
             }
+
         }
     };
 
