@@ -100,7 +100,6 @@ public abstract class AbstractRenderer {
 		
 		@Override
 		public void invoke(long window, int button, int action, int mods) {
-			//mouseButton1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
 			DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
 			DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
 			glfwGetCursorPos(window, xBuffer, yBuffer);

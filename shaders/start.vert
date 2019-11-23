@@ -29,7 +29,6 @@ vec3 getSun(vec2 vec){
 	float x = r*cos(az)*cos(ze);
 	float y = r*sin(az)*cos(ze);
 	float z = r*sin(ze);
-
 	return vec3(x,y,z);
 }
 
@@ -41,7 +40,6 @@ vec3 getPVObject(vec2 vec){
 	float x = r*cos(az)*cos(ze);
 	float y = 2*r*sin(az)*cos(ze);
 	float z = 0.5*r*sin(ze);
-
 	return vec3(x,y,z);
 }
 
@@ -65,7 +63,6 @@ vec3 getKart(vec2 vec){
 	float x= 1.5*cos(vec.x*3.14)+cos(vec.y*2*3.14/2)*cos(vec.x*3.14);
 	float y=2*sin(vec.x*3.14/2)+cos(vec.y*3.14/2)*sin(vec.x*3.14/2);
 	float z =sin(vec.y*3.14);
-
 	return vec3(x,y,z);
 }
 
@@ -82,15 +79,12 @@ float getZ(vec2 vec) {
 	return sin(time + vec.y * 3.14 *2);
 }
 
-
 vec3 getWave(vec2 vec){
 	float x= vec.x;
 	float y=vec.y;
 	float z = getZ(vec);
-
 	return vec3(x,y,z);
 }
-
 
 vec3 getDesk(vec2 vec){
 	float x= vec.x;
@@ -134,7 +128,6 @@ vec3 getElephantNormal(vec2 vec){
 
 	vec3 v = getElephant(vec+vec2(0, 0.001))
 	- getElephant(vec-vec2(0, 0.001));
-
 	return cross(u,v);
 }
 
@@ -144,7 +137,6 @@ vec3 getMySphericNormal(vec2 vec){
 
 	vec3 v = getMySpheric(vec+vec2(0, 0.001))
 	- getMySpheric(vec-vec2(0, 0.001));
-
 	return cross(u,v);
 }
 
@@ -154,12 +146,10 @@ vec3 getWaveNormal(vec2 vec){
 
 	vec3 v = getWave(vec+vec2(0, 0.001))
 	- getWave(vec-vec2(0, 0.001));
-
 	return cross(u,v);
 }
 
 vec3 getMySombrero(vec2 vec) {
-
 	float az = vec.x*3.14*2;
 	float r = vec.y*3.14*2;
 	float v = cos(2*r);
@@ -167,7 +157,6 @@ vec3 getMySombrero(vec2 vec) {
 	float x = r*cos(az);
 	float y = r*sin(az);
 	float z = v;
-
 	return vec3(x, y, z);
 
 }
@@ -177,7 +166,6 @@ vec3 getSombreroNormal(vec2 vec){
 
 	vec3 v = getMySombrero(vec+vec2(0, 0.001))
 	- getMySombrero(vec-vec2(0, 0.001));
-
 	return cross(u,v);
 }
 
@@ -189,7 +177,6 @@ vec3 getMyCylindric(vec2 vec) {
 	float x = r*cos(az);
 	float y = r*sin(az);
 	float z = v;
-
 	return vec3(x, y, z);
 }
 vec3 getCylindricNormal(vec2 vec){
@@ -301,7 +288,6 @@ void main() {
 			normal= normalize(getSunNormal(position));
 			normal=inverse(transpose(mat3(view)* mat3(model)))*normal;
 		}
-
 		vertColor = pos4.xyz;
 		depthColor = pos4.zzz;
 		light = normalize(mat3(view)*lightPos - (view * pos4).xyz);

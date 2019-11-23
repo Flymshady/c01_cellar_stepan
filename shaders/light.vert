@@ -28,7 +28,6 @@ vec3 getPVObject(vec2 vec){
     float x = r*cos(az)*cos(ze);
     float y = 2*r*sin(az)*cos(ze);
     float z = 0.5*r*sin(ze);
-
     return vec3(x,y,z);
 }
 vec3 getElephant(vec2 vec) {
@@ -39,7 +38,6 @@ vec3 getElephant(vec2 vec) {
     float x = r*cos(az)*cos(ze);
     float y = r*sin(az)*cos(ze);
     float z = r*sin(ze);
-
     return vec3(x,y,z);
 }
 
@@ -57,7 +55,6 @@ vec3 getMySpheric(vec2 vec) {
 
 vec3 getMySombrero(vec2 vec) {
 
-
     float az = vec.x*3.14;
     float r = vec.y*3.14;
     float v = cos(2*r);
@@ -65,9 +62,7 @@ vec3 getMySombrero(vec2 vec) {
     float x = r*cos(az);
     float y = r*sin(az);
     float z = v;
-
     return vec3(x, y, z);
-
 }
 
 vec3 getMyCylindric(vec2 vec) {
@@ -78,7 +73,6 @@ vec3 getMyCylindric(vec2 vec) {
     float x = r*cos(az);
     float y = r*sin(az);
     float z = v;
-
     return vec3(x, y, z);
 }
 
@@ -86,13 +80,10 @@ vec3 getKart(vec2 vec){
     float x= 1.5*cos(vec.x*3.14)+cos(vec.y*2*3.14/2)*cos(vec.x*3.14);
     float y=2*sin(vec.x*3.14/2)+cos(vec.y*3.14/2)*sin(vec.x*3.14/2);
     float z =sin(vec.y*3.14);
-
     return vec3(x,y,z);
 }
 
-
 void main() {
-
     if(type==0){
         vec2 position;
         position = inPosition * 2 - 1;

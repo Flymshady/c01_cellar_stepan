@@ -1,6 +1,5 @@
 package app;
 
-
 import lwjglutils.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
@@ -9,18 +8,14 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import transforms.*;
-
 import java.io.IOException;
 import java.nio.DoubleBuffer;
-
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.ARBFramebufferObject.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
-
-
 
 /**
 * 
@@ -69,55 +64,41 @@ public class Renderer extends AbstractRenderer{
     private String spotlightString="[Off]";
     private int locSpotlight;
     private float rotLSpeedBonus=0.01f;
-
-
     protected OGLTextRenderer textRenderer;
-
     double ox, oy;
     boolean mouseButton1 = false;
     private int lightPos;
     private int locBlinn_Phong;
     private int blinn_phong=1;
     private String blinn_phongS="[On]";
-
     private boolean line = false;
 
     public void init() {
         glClearColor(0.1f, 0.1f, 0.1f, 1);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
         glEnable(GL_DEPTH_TEST);
-
         shaderProgram = ShaderUtils.loadProgram("/start");
         shaderProgramLight = ShaderUtils.loadProgram("/light");
-
         locView = glGetUniformLocation(shaderProgram, "view");
         locProjection = glGetUniformLocation(shaderProgram, "projection");
         locType=  glGetUniformLocation(shaderProgram, "type");
         locTime =  glGetUniformLocation(shaderProgram, "time");
         locModel = glGetUniformLocation(shaderProgram, "model");
-
         locViewLight = glGetUniformLocation(shaderProgramLight, "view");
         locProjectionLight = glGetUniformLocation(shaderProgramLight, "projection");
         locTypeLight =  glGetUniformLocation(shaderProgramLight, "type");
         locTimeLight =  glGetUniformLocation(shaderProgramLight, "time");
         locModelLight =  glGetUniformLocation(shaderProgramLight, "model");
-
         lightPos =  glGetUniformLocation(shaderProgram, "lightPos");
         locBlinn_Phong =  glGetUniformLocation(shaderProgram, "blinn_phong");
         locSpotlight =  glGetUniformLocation(shaderProgram, "spotlight");
-
         locLightVP = glGetUniformLocation(shaderProgram, "lightViewProjection");
         locAttenuation=glGetUniformLocation(shaderProgram, "attenuation");
-
-
         buffers = GridFactory.generateGrid(100,100);
         renderTarget = new OGLRenderTarget(1024,1024);
-
         modeLoc =  glGetUniformLocation(shaderProgram, "mode");
         viewer = new OGLTexture2D.Viewer();
         textRenderer = new OGLTextRenderer(width, height);
-
 
         try {
             texture1 = new OGLTexture2D("./textures/mosaic.jpg");
@@ -132,9 +113,7 @@ public class Renderer extends AbstractRenderer{
                 .withFirstPerson(false)
                 .withRadius(6);
 
-
         projection = new Mat4PerspRH(Math.PI / 3,
-                //aktualizovat po rozsireni okna pres windowsizecallback
                 LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH, 1, 50);
 
         projectionOH= new Mat4OrthoRH(15, 15, 1,50);
@@ -142,14 +121,14 @@ public class Renderer extends AbstractRenderer{
 
     }
     public void display(){
-
-
         if(mode==7||mode==8){
             buffers = GridFactory.generateGrid(10,10);
         }else{
             buffers = GridFactory.generateGrid(100,100);
         }
+
         if(rot1B) {
+            if(rot1>100f) rot1=0.01f;
             rot1 += 0.01;
         }
         else{
@@ -157,22 +136,23 @@ public class Renderer extends AbstractRenderer{
         }
 
         if(rotLightB) {
-            rotLight += rotLSpeedBonus;
+            if(rotLight>100f) rotLight=rotLSpeedBonus;
+            rotLight +=rotLSpeedBonus;
         }
         else{
             rotLight+=0;
         }
+        if(time>1000f) time=0.1f;
         time += 0.1;
 
         renderFromLight();
         renderFromViewer();
 
-
         textRenderer.clear();
         String text = "Camera - WSAD, L_SHIFT, L_CTRL, Q, E, SPACE, LMB, Scroll";
         String text1 = "Fill/Line - L : "+lineString+"; Object rotation - U : "+rot1String+"; Light rotation - I : "+rotLString +"; Light rotation speed - ARROW_UP/DOWN";
         String text2 =  "Mode - 1 - 8: "+mode+"="+modeString+"; Blinn-Phong - H: "+blinn_phongS +"; Attenuation - J: "+attenuationString+"; Spotlight - K :"+spotlightString;
-        String text3 = "Persp/Orto projection - P: "+projString;
+        String text3 = "Persp/Orto projection - P: "+projString+"; Resizable window";
         textRenderer.addStr2D(3, height-3, text);
         textRenderer.addStr2D(3, height-15, text1);
         textRenderer.addStr2D(3, height-27, text3);
@@ -180,18 +160,11 @@ public class Renderer extends AbstractRenderer{
         textRenderer.addStr2D(width-170, height-3, "Štěpán Cellar - PGRF3 - 2019");
         textRenderer.draw();
 
-
         viewer.view(renderTarget.getColorTexture(), -1, 0, 0.5);
         viewer.view(renderTarget.getDepthTexture(), -1, -0.5, 0.5);
-
-
-
-
     }
 
     private void renderFromLight() {
-
-
         glEnable(GL_DEPTH_TEST);
         glUseProgram(shaderProgram);
         Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
@@ -200,22 +173,11 @@ public class Renderer extends AbstractRenderer{
         glUniform1i(locBlinn_Phong, blinn_phong);
         glUseProgram(shaderProgramLight);
 
-
-
         renderTarget.bind();
         glClearColor(0f,0.5f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-/*
-        glUniformMatrix4fv (locModelLight, false,
-                new Mat4RotX(rot1).mul(new Mat4Transl(0,0,1)).floatArray());
-        glUniformMatrix4fv (locViewLight, false,
-                new Mat4ViewRH(light, light.mul(-1), new Vec3D(0,1,0)).floatArray());
-        glUniformMatrix4fv (locProjectionLight, false,
-                new Mat4OrthoRH(10,10,1,50).floatArray());
-*/
 
         glUniformMatrix4fv(locViewLight, false, new Mat4ViewRH(light, light.mul(-1), new Vec3D(0,1,0)).floatArray());
-
         glUniformMatrix4fv(locProjectionLight, false, new Mat4OrthoRH(10,10,1,20).floatArray());
 
         glUniform1f(locTimeLight, time);
@@ -254,8 +216,6 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv(locModelLight, false,
                 new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(2, 3, 1)).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgramLight);
-
-
     }
 
     private void renderFromViewer() {
@@ -267,22 +227,15 @@ public class Renderer extends AbstractRenderer{
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        //defaultni framebuffer - render do obrazovky
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
         glViewport(0,0, width, height);
-
         glClearColor(0.5f,0f,0f,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUniform1i(locAttenuation, attenuation);
         glUniform1i(locSpotlight, spotlight);
 
-
-
-
         Vec3D light = new Vec3D(0, 0, 15).mul(new Mat3RotY(rotLight));
         glUniform3f(lightPos,(float)light.getX(), (float)light.getY(), (float)light.getZ());
-
 
         glUniformMatrix4fv(locView, false, camera.getViewMatrix().floatArray());
         if(persp) {
@@ -295,18 +248,10 @@ public class Renderer extends AbstractRenderer{
                 .mul(new Mat4OrthoRH(10,10,1,20));
 
         glUniformMatrix4fv(locLightVP,false, matMVPlight.floatArray());
-
-
-
-        //misto depth dat color
         renderTarget.getDepthTexture().bind(shaderProgram, "depthTexture",1);
-
         texture1.bind(shaderProgram, "texture/mosaic",0);
 
-
-        //  time += 0.1;
         glUniform1f(locTime, time);
-
         glUniform1f(locType, 0);
         glUniformMatrix4fv (locModel, false,
                 new Mat4Scale(1).mul(new Mat4RotY(rot1)).mul(new Mat4Transl(2,3,1)).floatArray());
@@ -343,15 +288,13 @@ public class Renderer extends AbstractRenderer{
         glUniformMatrix4fv (locModel, false,
                 new Mat4Scale(1).floatArray());
         buffers.draw(GL_TRIANGLES, shaderProgram);
-
     }
-
 
     private GLFWKeyCallback   keyCallback = new GLFWKeyCallback() {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+                glfwSetWindowShouldClose(window, true);
             if (action == GLFW_PRESS || action == GLFW_REPEAT){
                 switch (key) {
                     case GLFW_KEY_W:
@@ -486,8 +429,6 @@ public class Renderer extends AbstractRenderer{
                             rotLSpeedBonus-=0.005;
                         }
                         break;
-
-
                 }
             }
         }
@@ -548,7 +489,6 @@ public class Renderer extends AbstractRenderer{
                 ox = x;
                 oy = y;
             }
-
         }
     };
 
@@ -561,7 +501,6 @@ public class Renderer extends AbstractRenderer{
                 camera = camera.mulRadius(1.1f);
             else
                 camera = camera.mulRadius(0.9f);
-
         }
     };
     @Override

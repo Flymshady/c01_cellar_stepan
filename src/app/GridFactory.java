@@ -5,6 +5,7 @@ import lwjglutils.OGLBuffers;
 public class GridFactory {
 
     public static OGLBuffers generateGrid(int m, int n) {
+
         float[] vb = new float[m*n*2];
         int index=0;
         for (int j =0;j<n;j++){
@@ -15,6 +16,20 @@ public class GridFactory {
               //  System.out.println(j/(float)(n-1));
             }
         }
+/*
+        int[] ib = new int[m*n+(m*(n-2))+(2*(n-1))];
+        int index2=0;
+        for(int j=0;j<n-1;j++){
+            int row=0;
+            for(int i=0;i<=m-1;i++){
+                ib[index2++]=j*m+i;
+                ib[index2++]=(j+1)*m+i;
+                row=i;
+            }
+            ib[index2++]=(j+1)*m+row;
+            ib[index2++]=(j+1)*m;
+        }
+*/
 
         int[] ib = new int[(m-1)*(n-1)*2*3];
         int index2=0;
@@ -31,6 +46,7 @@ public class GridFactory {
 
             }
         }
+
         OGLBuffers.Attrib[] atribs = new OGLBuffers.Attrib[]{
                 new OGLBuffers.Attrib("inPosition", 2)
         };
